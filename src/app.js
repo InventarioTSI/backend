@@ -7,6 +7,7 @@ import deviceRoutes from "./routes/device.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import placeRoutes from "./routes/place.routes.js";
 import historicRoutes from "./routes/historic.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use("/api/places", placeRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/historic", historicRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 export default app;
