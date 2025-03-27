@@ -4,7 +4,13 @@ import { mapToHtmlInputType } from "../lib/utils.js";
 import { PORT } from "../config.js";
 import axios from "axios";
 
-const getAllDevices = async (page, limit, searchTerm, stateFilter, employeeFilter) => {
+const getAllDevices = async (
+  page,
+  limit,
+  searchTerm,
+  stateFilter,
+  employeeFilter
+) => {
   const pool = await getConnection();
 
   const offset = (page - 1) * parseInt(limit);
@@ -14,7 +20,9 @@ const getAllDevices = async (page, limit, searchTerm, stateFilter, employeeFilte
 
   // Filtro de búsqueda (searchTerm)
   if (searchTerm) {
-    conditions.push(`(Tipo LIKE @searchTerm OR Observaciones LIKE @searchTerm OR Referencia LIKE @searchTerm)`);
+    conditions.push(
+      `(Tipo LIKE @searchTerm OR Observaciones LIKE @searchTerm OR Referencia LIKE @searchTerm)`
+    );
   }
 
   // Filtro de estado (stateFilter)
@@ -28,7 +36,8 @@ const getAllDevices = async (page, limit, searchTerm, stateFilter, employeeFilte
   }
 
   // Si no hay condiciones, no se añade WHERE
-  const whereCondition = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereCondition =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   try {
     // Consulta de dispositivos con filtros y paginación
@@ -38,8 +47,7 @@ const getAllDevices = async (page, limit, searchTerm, stateFilter, employeeFilte
       .input("stateFilter", sql.NVarChar, stateFilter)
       .input("employeeFilter", sql.NVarChar, employeeFilter)
       .input("offset", sql.Int, offset)
-      .input("limit", sql.Int, parseInt(limit))
-      .query(`
+      .input("limit", sql.Int, parseInt(limit)).query(`
         SELECT * FROM (
           SELECT 'Cable' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Cable
           UNION ALL
@@ -81,43 +89,48 @@ const getAllDevices = async (page, limit, searchTerm, stateFilter, employeeFilte
         FETCH NEXT @limit ROWS ONLY;
     `);
 
-    // Total de dispositivos (contamos de todas las tablas)
-    const totalResult = await pool.request().query(`
-      SELECT COUNT(*) AS total FROM (
-        SELECT Id FROM Cable
-        UNION ALL
-        SELECT Id FROM Camara
-        UNION ALL
-        SELECT Id FROM DAQ
-        UNION ALL
-        SELECT Id FROM Impresora
-        UNION ALL
-        SELECT Id FROM LectorDiscos
-        UNION ALL
-        SELECT Id FROM MemoriaExterna
-        UNION ALL
-        SELECT Id FROM OrdenadorPortatil
-        UNION ALL
-        SELECT Id FROM OrdenadorSobremesa
-        UNION ALL
-        SELECT Id FROM Otros
-        UNION ALL
-        SELECT Id FROM Pantalla
-        UNION ALL
-        SELECT Id FROM Raton
-        UNION ALL
-        SELECT Id FROM Router
-        UNION ALL
-        SELECT Id FROM Servidor
-        UNION ALL
-        SELECT Id FROM Switch
-        UNION ALL
-        SELECT Id FROM Tablet
-        UNION ALL
-        SELECT Id FROM Teclado
-        UNION ALL
-        SELECT Id FROM TelefonoMovil
-      ) AS totaldispositivos
+    // Total de dispositivos con filtros aplicados
+    const totalResult = await pool
+      .request()
+      .input("searchTerm", sql.NVarChar, `%${searchTerm}%`)
+      .input("stateFilter", sql.NVarChar, stateFilter)
+      .input("employeeFilter", sql.NVarChar, employeeFilter).query(`
+        SELECT COUNT(*) AS total FROM (
+          SELECT 'Cable' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Cable
+          UNION ALL
+          SELECT 'Camara' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Camara
+          UNION ALL
+          SELECT 'DAQ' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM DAQ
+          UNION ALL
+          SELECT 'Impresora' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Impresora
+          UNION ALL
+          SELECT 'LectorDiscos' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM LectorDiscos
+          UNION ALL
+          SELECT 'MemoriaExterna' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM MemoriaExterna
+          UNION ALL
+          SELECT 'OrdenadorPortatil' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM OrdenadorPortatil
+          UNION ALL
+          SELECT 'OrdenadorSobremesa' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM OrdenadorSobremesa
+          UNION ALL
+          SELECT 'Otros' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Otros
+          UNION ALL
+          SELECT 'Pantalla' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Pantalla
+          UNION ALL
+          SELECT 'Raton' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Raton
+          UNION ALL
+          SELECT 'Router' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Router
+          UNION ALL
+          SELECT 'Servidor' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Servidor
+          UNION ALL
+          SELECT 'Switch' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Switch
+          UNION ALL
+          SELECT 'Tablet' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Tablet
+          UNION ALL
+          SELECT 'Teclado' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM Teclado
+          UNION ALL
+          SELECT 'TelefonoMovil' AS Tipo, Id, Referencia, Modelo, AñoCompra, PuestosTrabajo, Observaciones, Estado, NumSerie, Factura FROM TelefonoMovil
+        ) AS dispositivos
+        ${whereCondition}  -- Aplica las condiciones de filtro si las hay
     `);
 
     const total = totalResult.recordset[0].total;
