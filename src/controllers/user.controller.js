@@ -9,4 +9,18 @@ const getAllUsersHandler = async (req, res) => {
   }
 };
 
-export { getAllUsersHandler }; // Exportar la función
+const checkAdminHandler = (req, res) => {
+  const user = req.user; // `req.user` contiene la información del usuario autenticado
+
+  if (!user) {
+    return res.status(401).json({ message: "No autenticado" });
+  }
+
+  if (user.role !== "Admin") {
+    return res.status(403).json({ isAdmin: false });
+  }
+
+  res.json({ isAdmin: true });
+};
+
+export { getAllUsersHandler, checkAdminHandler }; // Exportar la función
