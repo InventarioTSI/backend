@@ -38,19 +38,21 @@ const register = async (user) => {
   try {
     const response = await pool
       .request()
-      .input("id", sql.NVarChar, id)
       .input("userName", sql.NVarChar, userName)
       .input("password", sql.NVarChar, password)
       .input("role", sql.NVarChar, role)
       .query(
-        `INSERT INTO Usuario (Id, Usuario, Pass, Rol) VALUES (@id, @userName, @password, @role)`
+        `INSERT INTO Usuario (Usuario, Pass, Rol) VALUES (@userName, @password, @role);
+         SELECT SCOPE_IDENTITY() AS Id;` // Obtiene el ID generado automáticamente si no se especifica
       );
+
+    const newId = response.recordset[0]?.Id; // Usa el id proporcionado o el generado automáticamente
 
     return {
       userData: {
-        id: id,
-        userName: userName,
-        role: role,
+        id: newId,
+        userName,
+        role,
       },
     };
   } catch (error) {
@@ -82,8 +84,27 @@ const getAllUsers = async () => {
   }
 };
 
+const deleteUser = async (userId) => {
+  const pool = await getConnection();
+
+  try {
+    const result = await pool
+      .request()
+      .input("id", sql.Int, userId)
+      .query(`DELETE FROM Usuario WHERE Id = @id`);
+
+    return result; // Devuelve el resultado para verificar si se eliminó algo
+  } catch (error) {
+    throw {
+      status: 500,
+      message: error?.message || "Error al eliminar el usuario",
+    };
+  }
+};
+
 export const User = {
   getUser,
   register,
   getAllUsers,
+  delete: deleteUser, // Exporta la función de eliminación
 };
