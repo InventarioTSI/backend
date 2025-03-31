@@ -61,4 +61,27 @@ const deleteUserHandler = async (req, res) => {
   }
 };
 
-export { getAllUsersHandler, checkAdminHandler, createUserHandler, deleteUserHandler }; // Exportar la función
+const updateUserHandler = async (req, res) => {
+  const { userId } = req.params; // Obtén el ID del usuario desde los parámetros de la URL
+  const { userName, role } = req.body; // Obtén los datos del cuerpo de la solicitud
+
+  // Validar que los campos requeridos estén presentes
+  if (!userName || !role) {
+    return res.status(400).json({ message: "Todos los campos son obligatorios" });
+  }
+
+  try {
+    // Llamar al modelo para actualizar el usuario
+    const result = await User.update(userId, { userName, role });
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    res.status(200).json({ message: "Usuario actualizado correctamente" });
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
+
+export { getAllUsersHandler, checkAdminHandler, createUserHandler, deleteUserHandler, updateUserHandler }; // Exportar la función
