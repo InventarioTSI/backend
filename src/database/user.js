@@ -102,9 +102,36 @@ const deleteUser = async (userId) => {
   }
 };
 
+const update = async (userId, user) => {
+  const pool = await getConnection();
+
+  const { userName, role } = user;
+
+  try {
+    const result = await pool
+      .request()
+      .input("id", sql.Int, userId)
+      .input("userName", sql.NVarChar, userName)
+      .input("role", sql.NVarChar, role)
+      .query(
+        `UPDATE Usuario
+         SET Usuario = @userName, Rol = @role
+         WHERE Id = @id`
+      );
+
+    return result; // Devuelve el resultado para verificar si se actualizó algo
+  } catch (error) {
+    throw {
+      status: 500,
+      message: error?.message || "Error al actualizar el usuario",
+    };
+  }
+};
+
 export const User = {
   getUser,
   register,
   getAllUsers,
-  delete: deleteUser, // Exporta la función de eliminación
+  delete: deleteUser, 
+  update,
 };
