@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAdminHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, updateUserHandler } from "../controllers/user.controller.js";
+import { checkAdminHandler, deleteUserHandler, getAllUsersHandler, register, updateUserHandler } from "../controllers/user.controller.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -8,7 +8,7 @@ router.get("/", getAllUsersHandler);
 
 router.get("/auth/check-admin", authMiddleware, checkAdminHandler);
 
-router.post("/", authMiddleware, createUserHandler);
+router.post("/", register);
 
 router.delete("/:userId", authMiddleware, deleteUserHandler);
 

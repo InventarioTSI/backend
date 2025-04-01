@@ -33,7 +33,7 @@ const getUser = async (userName) => {
 const register = async (user) => {
   const pool = await getConnection();
 
-  const { id, userName, password, role } = user;
+  const { userName, password, role } = user;
 
   try {
     const response = await pool

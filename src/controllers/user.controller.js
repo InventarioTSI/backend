@@ -1,4 +1,7 @@
 import { User } from "../database/user.js"; // Ajusta la ruta si es necesario
+import { createAccessToken } from "../lib/jwt.js";
+import { authService } from "../services/auth.service.js";
+import { body, validationResult } from "express-validator";
 
 const getAllUsersHandler = async (req, res) => {
   try {
@@ -23,24 +26,38 @@ const checkAdminHandler = (req, res) => {
   res.json({ isAdmin: true });
 };
 
-const createUserHandler = async (req, res) => {
-  const {userName, password, role } = req.body;
-
-  // Validar que todos los campos requeridos estén presentes
-  if (!userName || !password || !role) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios" });
-  }
-
+const register = async (req, res) => {
   try {
-    // Llamar al modelo para registrar el usuario
-    const newUser = await User.register({ userName, password, role });
+    // Validar que los campos requeridos estén presentes
+    await body("userName").notEmpty().run(req);
+    await body("password").notEmpty().run(req);
+    await body("role").notEmpty().run(req); 
 
-    res.status(201).json({
-      message: "Usuario creado exitosamente",
-      user: newUser.userData, // Enviar los datos del usuario creado
-    });
+    // Puedes agregar más validaciones según sea necesario
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .send({ status: "FAILED", data: "Todos los campos son obligatorios" });
+    }
+
+    // Si la validación pasa, proceder a registrar el usuario
+    const newUser = {
+      userName: req.body.userName,
+      password: req.body.password,
+      role: req.body.role,
+    };
+
+    const registeredUser = await authService.register(newUser);
+
+    const token = await createAccessToken({ id: registeredUser.id });
+
+    return res
+      .status(201)
+      .send({ status: "OK", data: registeredUser, token: token });
   } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
+    console.error("Error en register:", error);
+    return res.status(500).send({ status: "FAILED", data: error.message });
   }
 };
 
@@ -84,4 +101,4 @@ const updateUserHandler = async (req, res) => {
   }
 };
 
-export { getAllUsersHandler, checkAdminHandler, createUserHandler, deleteUserHandler, updateUserHandler }; // Exportar la función
+export { getAllUsersHandler, checkAdminHandler, register, deleteUserHandler, updateUserHandler }; // Exportar la función

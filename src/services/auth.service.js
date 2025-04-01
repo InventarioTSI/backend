@@ -15,7 +15,7 @@ const register = async (userData) => {
     id: uuidv4(),
     userName: userData.userName,
     password: passwordHash,
-    role: "user",
+    role: userData.role || "user",
   };
 
   const registeredUser = await User.register(UserToInsert);
