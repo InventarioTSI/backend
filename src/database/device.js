@@ -257,39 +257,16 @@ const createDevice = async (device, creador) => {
   }
 };
 
-const updateDevice = async (deviceType, deviceId, changes, creador) => {
+const updateDevice = async (deviceType, deviceId, changes) => {
+  // Eliminamos el parámetro 'creador'
   const pool = await getConnection();
 
-  await pool
-    .request()
-    .input("deviceType", sql.NVarChar, deviceType)
-    .input("deviceId", sql.NVarChar, deviceId)
-    .query(
-      `UPDATE ${deviceType} SET ${Object.entries(changes)
-        .map(([key, value]) => `${key} = '${value}'`)
-        .join(", ")} WHERE id = '${deviceId}'`
-    );
-
-  try {
-    const UsuarioAsignado = await pool
-      .request()
-      .query(
-        `SELECT Empleado FROM PuestosTrabajo WHERE Puesto = ${changes.PuestosTrabajo}`
-      );
-
-    await axios.post(`http://localhost:${PORT}/api/historic`, {
-      IdEquipo: deviceId,
-      Observaciones: "Dispositivo Actualizado",
-      Creador: creador,
-      UsuarioAsignado: UsuarioAsignado.recordset[0].Empleado,
-      Tipo: "actualización",
-    });
-  } catch (error) {
-    throw {
-      status: 500,
-      message: error?.message || error,
-    };
-  }
+  // Solo actualizamos el dispositivo, sin crear histórico automático
+  await pool.request().query(
+    `UPDATE ${deviceType} SET ${Object.entries(changes)
+      .map(([key, value]) => `${key} = '${value}'`)
+      .join(", ")} WHERE id = '${deviceId}'`
+  );
 
   return {
     deviceData: {
