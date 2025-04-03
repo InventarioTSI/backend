@@ -6,7 +6,7 @@ const getAllDevices = async (req, res) => {
 
   try {
     // Agregar encabezado Cache-Control para evitar el almacenamiento en caché
-    res.set('Cache-Control', 'no-store');
+    res.set("Cache-Control", "no-store");
 
     const { devices, total, employees } = await DeviceService.getAllDevices(
       page,
@@ -104,14 +104,13 @@ const updateDevice = async (req, res) => {
         .send({ status: "FAILED", data: "fields are required" });
     }
 
-    const creador = req.user.userName;
-
+    // Actualizamos sin enviar el creador
     const updatedDevice = await DeviceService.updateDevice(
       deviceType,
       deviceId,
-      body,
-      creador
+      body
     );
+
     res.status(200).send({ status: "OK", data: updatedDevice });
   } catch (error) {
     res.status(500).send({ status: "FAILED", data: error.message });

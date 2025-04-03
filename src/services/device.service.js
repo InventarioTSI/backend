@@ -42,11 +42,11 @@ const createDevice = async (newDevice, creador) => {
 };
 
 const updateDevice = async (deviceType, deviceId, changes, creador) => {
+  // Solo actualiza el dispositivo, sin crear histórico
   const updatedDevice = await Device.updateDevice(
     deviceType,
     deviceId,
-    changes,
-    creador
+    changes
   );
   return updatedDevice;
 };
